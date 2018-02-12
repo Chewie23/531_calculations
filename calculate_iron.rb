@@ -32,9 +32,16 @@ end
 
 def main
 
+    lifts = {"1" => :Squat, "2" => :OHP, 
+             "3" => :SquatII, "4" =>:OHPII, 
+             "5" => :Deadlift, "6" => :Bench}
+    weeks = {"1" => method(:calc_week_1), 
+             "2" => method(:calc_week_2), 
+             "3" => method(:calc_week_3),
+             "4" => method(:calc_week_4) }
     log = '531_log.yaml'
     lift_log = process_yaml(log)
-    valid_choices = ["1", "2", "3", "4", "5", "6"]
+    valid_choices = ["1", "2", "3", "4", "5", "6", "7", "q", "Q"]
     quit_choices = ["Q", "q", "quit", "Quit"]
 
     tm_prompt = <<~HEREDOC
@@ -45,6 +52,7 @@ def main
     [4] OHP II
     [5] Deadlift
     [6] Bench
+    [7] All
     [Q]uit
     HEREDOC
 
@@ -73,47 +81,34 @@ def main
             tm = gets.chomp
         end
 
-        case
-        when tm == "1"
-            tm = lift_log[:Squat]
-        when tm == "2"
-            tm = lift_log[:OHP]
-        when tm == "3"
-            tm = lift_log[:SquatII]
-        when tm == "4"
-            tm = lift_log[:OHPII]
-        when tm == "5"
-            tm = lift_log[:Deadlift]
-        when tm == "6"
-            tm = lift_log[:Bench]
-        end
-
         puts week_prompt
-        week = gets.chomp
+        week_choice = gets.chomp
 
-        if quit_choices.include?(week)
+        if quit_choices.include?(week_choice)
             done = true
             next
         end
 
-        until valid_choices[0..3].include?(week)
+        until valid_choices[0..3].include?(week_choice)
             puts "Please choose a valid option!"
             puts week_prompt
-            week = gets.chomp
+            week_choice = gets.chomp
         end
 
-        #TODO
-        #Refactor. I am definitely repeating myself here
-        case
-        when week == "1"
-            puts "\n#{calc_week_1(tm)}"
-        when week == "2"
-            puts "\n#{calc_week_2(tm)}"
-        when week == "3"
-            puts "\n#{calc_week_3(tm)}"
-        when week == "4"
-            puts "\n#{calc_week_4(tm)}"
-        end #case  
+        if tm == "7"
+            for x in lifts.values
+                puts "Lift: #{x}"
+                puts weeks[week_choice].(lift_log[x])
+                puts
+            end
+            #lifts.each{|x| puts weeks[week_choice].(tm[x])} 
+        else
+            puts "#{lifts[tm]}: "
+            tm = lift_log[ lifts[tm] ]
+            
+            puts weeks[week_choice].(tm)
+            puts
+        end #if/else
 
     end #while loop
         
